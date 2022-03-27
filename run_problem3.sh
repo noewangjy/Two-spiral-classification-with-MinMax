@@ -10,5 +10,6 @@ python src/MinMax_model.py \
     --do_test \
     --visualize_data_subsets \
     --visualize_MinMax_db \
-    --visualize_submodel_db
+    --visualize_submodel_db \
+    --multiprocessing
 

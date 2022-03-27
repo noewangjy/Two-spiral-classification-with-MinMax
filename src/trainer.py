@@ -112,11 +112,11 @@ class Trainer(object):
 
 
     def save_model(self, model: BaseModel, save_path: str=".", index: str="0"):
+        path = os.path.join(save_path, index + "_model.pkl")
         if os.path.exists(save_path):
-            path = os.path.join(save_path, index + "_model.pkl")
             print(f"Saving model to path: {path}")
         else:
-            raise ValueError(f"Dir {save_path} does not exists!")
+            os.makedirs(save_path)
 
         with open(path, 'wb') as f:
             pickle.dump(model, f)

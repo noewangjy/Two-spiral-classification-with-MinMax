@@ -10,18 +10,18 @@ import matplotlib.pyplot as plt
 
 device = "cpu"
         
-class OneLayerMLQP(nn.Module):
+class OneLayerMLQPwithLinearOut(nn.Module):
     def __init__(self):
-        super(OneLayerMLQP, self).__init__()
+        super(OneLayerMLQPwithLinearOut, self).__init__()
         input_size = 2
-        hidden_size = 64
+        hidden_size = 40
         output_size = 1
         self.u = nn.Parameter(torch.randn([input_size, hidden_size], dtype=torch.float32))
         self.v = nn.Parameter(torch.randn([input_size, hidden_size], dtype=torch.float32))
         self.b = nn.Parameter(torch.randn([1, hidden_size], dtype=torch.float32))
-        # nn.init.xavier_normal(self.u)
-        # nn.init.xavier_normal(self.v)
-        # nn.init.xavier_normal(self.b)
+        nn.init.xavier_normal_(self.u)
+        nn.init.xavier_normal_(self.v)
+        nn.init.xavier_normal_(self.b)
         
         self.linear = nn.Linear(hidden_size, output_size)
 
@@ -29,11 +29,8 @@ class OneLayerMLQP(nn.Module):
     def forward(self, X):
         X2 = torch.mul(X, X)
         output = torch.mm(X2, self.u) + torch.mm(X, self.v) + self.b
-        # print(output.size())
         output = torch.nn.Sigmoid()(output)
-        # print(output.size())
         output = self.linear(output)
-        # print(output.size())
         
         return torch.nn.Sigmoid()(output)
 
@@ -41,8 +38,8 @@ class OneLayerMLQP(nn.Module):
 class TwoLayerMLP(nn.Module):
     def __init__(self):
         super(TwoLayerMLP, self).__init__()
-        self.linear1 = nn.Linear(2, 64)
-        self.linear2 = nn.Linear(64, 1)
+        self.linear1 = nn.Linear(2, 40)
+        self.linear2 = nn.Linear(40, 1)
     def forward(self, X):
         X = self.linear1(X)
         X = nn.ReLU()(X)
@@ -133,9 +130,12 @@ def plot_db(model: nn.Module, save_path: str="figures/Torch", index:str="Torch")
             preds.append(pred.item())
         preds = np.expand_dims(np.array(preds), 1)
     grid_points = grid_points.cpu().numpy()
+
     plt.figure(figsize=(5,5))
-    plt.scatter(grid_points[:, 0][preds[:,0]==0], grid_points[:, 1][preds[:,0]==0])
-    plt.scatter(grid_points[:, 0][preds[:,0]==1], grid_points[:, 1][preds[:,0]==1])
+    plt.scatter(grid_points[:, 0][preds[:,0]==0], grid_points[:, 1][preds[:,0]==0], c='k')
+    plt.scatter(grid_points[:, 0][preds[:,0]==1], grid_points[:, 1][preds[:,0]==1], c='w')
+    plt.legend(["label=0", "label=1"])
+    plt.title(index+" decision boundary")
     plt.savefig(os.path.join(save_path, index+"_decision_boundary.png"), dpi=100)
 
 
@@ -153,8 +153,8 @@ if __name__ == "__main__":
     parser.add_argument("--visualize_db", action="store_true") 
     args = parser.parse_args()
 
-    if args.model_name == "OneLayerMLQP":
-        model = OneLayerMLQP()
+    if args.model_name == "OneLayerMLQPwithLinearOut":
+        model = OneLayerMLQPwithLinearOut()
     elif args.model_name == "TwoLayerMLP":
         model = TwoLayerMLP()
     elif args.model_name == "ThreeLayerMLP":
